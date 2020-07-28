@@ -1,8 +1,8 @@
-# Data Visualization Project #2: Scatterplot Graph using D3.
+# Data Visualization Project #3: Heat Map using D3.
 
 ## View project
 
-[D3 Scatterplot Graph](https://kelvinsanchez15.github.io/scatterplot-graph/)
+[D3 Scatterplot Graph](https://kelvinsanchez15.github.io/heat-map/)
 
 ## Additional Dependencies
 
