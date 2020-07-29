@@ -25,10 +25,10 @@ const fullNameMonths = [
 // SVG layout setup
 const width = 900;
 const height = 300;
-const margin = { top: 30, right: 20, bottom: 35, left: 80 };
+const margin = { top: 10, right: 10, bottom: 45, left: 80 };
 
 const svg = d3
-  .select("#graph")
+  .select("#heat-map")
   .append("svg")
   .attr("viewBox", [0, 0, width, height]);
 
@@ -50,9 +50,9 @@ const render = (data) => {
 
   // Sequential color scale implementation
   const colorScale = d3
-    .scaleSequential()
-    .domain([2.8, 12.8])
-    .interpolator(d3.interpolateBlues);
+    .scaleSequentialQuantile()
+    .domain([2.8, 4.5, 6.2, 7.9, 9.6, 11.3, 12.8])
+    .interpolator(d3.interpolateYlOrRd);
 
   // Axes setup
   const xAxis = d3
@@ -98,7 +98,7 @@ const render = (data) => {
     .text(xAxisLabel)
     .attr("fill", "white");
 
-  // Rect (bar) elements append
+  // Rect (cell) elements append
   svg
     .selectAll("rect")
     .data(data.monthlyVariance)
@@ -112,13 +112,13 @@ const render = (data) => {
     .attr("y", (d) => yScale(yValue(d)))
     .attr("width", xScale.bandwidth())
     .attr("height", yScale.bandwidth())
-    .attr("fill", (d) => colorScale(baseTemp + d.variance));
-  // .on("mouseover", (d) => tooltipMouseOver(d))
-  // .on("mouseout", (d) => tooltipMouseOut(d));
+    .attr("fill", (d) => colorScale(baseTemp + d.variance))
+    .on("mouseover", (d) => tooltipMouseOver(d))
+    .on("mouseout", (d) => tooltipMouseOut(d));
 
   // Interaction logic
   const tooltip = d3
-    .select("#graph")
+    .select("#heat-map")
     .append("div")
     .attr("id", "tooltip")
     .style("opacity", 0);
@@ -128,10 +128,11 @@ const render = (data) => {
 
     tooltip
       .html(
-        `${d["Name"]} (${d["Nationality"]})
-        <br />Year: ${formatYear(d["Year"])}, Time: ${formatTime(d["Time"])}`
+        `Year: ${d.year}<br />
+      Temp: ${(baseTemp + d.variance).toFixed(1)}°C<br />
+      Variance: ${d.variance}`
       )
-      .attr("data-year", d["Year"])
+      .attr("data-year", d.year)
       .style("left", d3.event.pageX + 20 + "px")
       .style("top", d3.event.pageY + 20 + "px");
   };
@@ -140,34 +141,33 @@ const render = (data) => {
     tooltip.transition().duration(200).style("opacity", 0);
 
   // Legend logic
-  // const keys = ["Dopping Allegations", "No Dopping Allegations"];
+  const keys = [2.8, 4.5, 6.2, 7.9, 9.6, 11.3, 12.8];
 
-  // const color = d3.scaleOrdinal().domain(keys).range(["#ad4231", "#079672"]);
+  const rectHeight = 7;
+  const rectWidth = 25;
 
-  // const size = 10;
+  const legend = svg.append("g").attr("id", "legend");
 
-  // const legend = svg.append("g").attr("id", "legend");
+  legend
+    .selectAll("myrects")
+    .data(keys)
+    .enter()
+    .append("rect")
+    .attr("x", (d, i) => margin.left + i * rectWidth)
+    .attr("y", 285)
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .attr("stroke", "black")
+    .style("fill", (d) => colorScale(d));
 
-  // legend
-  //   .selectAll("mydots")
-  //   .data(keys)
-  //   .enter()
-  //   .append("rect")
-  //   .attr("x", 450)
-  //   .attr("y", (d, i) => margin.top + i * (size + 5))
-  //   .attr("width", size)
-  //   .attr("height", size)
-  //   .style("fill", (d) => color(d));
-
-  // legend
-  //   .selectAll("mylabels")
-  //   .data(keys)
-  //   .enter()
-  //   .append("text")
-  //   .attr("x", 450 + size * 1.2)
-  //   .attr("y", (d, i) => margin.top + i * (size + 5) + size / 2)
-  //   .style("fill", (d) => color(d))
-  //   .text((d) => d)
-  //   .attr("text-anchor", "left")
-  //   .style("alignment-baseline", "central");
+  legend
+    .selectAll("mylabels")
+    .data(keys)
+    .enter()
+    .append("text")
+    .attr("x", (d, i) => margin.left + rectWidth / 2 + i * rectWidth)
+    .attr("y", height)
+    .style("fill", "white")
+    .text((d) => d)
+    .attr("text-anchor", "middle");
 };
